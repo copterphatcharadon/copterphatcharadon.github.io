@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Terbin — ตู้กดน้ำ</title>
+  <style>
+    :root{--bg:#071023;--card:#091226;--muted:#a6b3c2;--accent:#38bdf8;--accent2:#2dd4bf}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter, 'Noto Sans Thai', system-ui, -apple-system, Roboto, 'Segoe UI', sans-serif;background:linear-gradient(180deg,#071023 0%, #081528 100%);color:#e7f2fb}
+    .wrap{max-width:1100px;margin:24px auto;padding:16px;display:grid;grid-template-columns:1.4fr .8fr;gap:18px}
+    header{grid-column:1/-1;display:flex;align-items:center;gap:12px}
+    .brand{width:64px;height:64px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;color:#012;box-shadow:0 10px 30px #0006}
+    h1{margin:0;font-size:20px}
+    .subtitle{color:var(--muted);font-size:13px}
+    .panel{background:linear-gradient(180deg,#081428 0%, #071022 100%);border:1px solid #102233;border-radius:14px;padding:12px}
+    .menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    @media (max-width:1000px){.wrap{grid-template-columns:1fr}.menu-grid{grid-template-columns:repeat(2,1fr)}}
+    .card{background:#071826;border:1px solid #112436;border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:8px}
+    .thumb{height:120px;border-radius:10px;overflow:hidden;background:#06121a;display:flex;align-items:center;justify-content:center}
+    .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .name{font-weight:700}
+    .meta{color:var(--muted);font-size:13px}
+    .row{display:flex;gap:8px;align-items:center;justify-content:space-between}
+    .btn{appearance:none;border:1px solid #173246;background:transparent;color:#d8f3ff;padding:8px 10px;border-radius:10px;cursor:pointer}
+    .btn.primary{background:linear-gradient(90deg,var(--accent2),var(--accent));border:none;color:#012}
+    .controls{display:flex;flex-direction:column;gap:8px}
+    .cart{display:flex;flex-direction:column;gap:10px;height:100%}
+    .cart-list{overflow:auto;max-height:56vh;padding:6px;display:flex;flex-direction:column;gap:8px}
+    .cart-item{display:flex;gap:8px;align-items:center;background:#071829;border-radius:10px;padding:8px;border:1px solid #122a3a}
+    .dot{width:48px;height:48px;border-radius:8px;overflow:hidden}
+    .dot img{width:100%;height:100%;object-fit:cover}
+    .small{font-size:13px;color:var(--muted)}
+    .total{font-weight:800;font-size:18px}
+    /* Drawer */
+    .drawer{position:fixed;right:16px;bottom:16px;width:360px;max-width:94%;background:#071826;border:1px solid #122436;border-radius:12px;padding:12px;display:none;box-shadow:0 20px 40px #000a}
+    .drawer.open{display:block}
+    .chips{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{padding:8px 10px;border-radius:999px;border:1px solid #12333f;background:transparent;cursor:pointer}
+    .chip.active{background:linear-gradient(90deg,var(--accent2),var(--accent));color:#012;border:none}
+    input[type=range]{width:100%}
+    .qr{height:160px;background:#0b1824;border-radius:10px;display:grid;place-items:center;border:1px dashed #123}
+    .hint{color:var(--muted);font-size:13px}
+    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;background:#081328;border:1px solid #12313b;padding:10px 14px;border-radius:10px;display:none}
+  </style>
+</head>
+<body>
+  <div class="wrap" role="application" aria-label="Terbin ตู้กดน้ำ">
+    <header>
+      <div class="brand">TB</div>
+      <div>
+        <h1>Terbin ตู้กดน้ำ</h1>
+        <div class="subtitle">Prototype UI — ลองเลือกเมนู ปรับระดับ และจำลองชำระเงิน</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+        <div class="hint">โหมด: โชว์</div>
+      </div>
+    </header>
+
+    <section class="panel" aria-label="เมนูเครื่องดื่ม">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <strong>เมนู</strong>
+        <input id="search" placeholder="ค้นหาเมนู…" style="padding:8px;border-radius:10px;background:#061425;border:1px solid #123;color:#e6f7ff" />
+      </div>
+      <div class="menu-grid" id="menuGrid"></div>
+    </section>
+
+    <aside class="panel cart" aria-label="ตะกร้า">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <strong>ตะกร้า</strong>
+        <button class="btn" id="clearBtn">ล้าง</button>
+      </div>
+      <div class="cart-list" id="cartList">
+        <div class="hint">ยังไม่มีสินค้า เลือกเมนูทางซ้าย</div>
+      </div>
+      <div style="margin-top:auto">
+        <div style="display:flex;align-items:center;justify-content:space-between"><span class="small">ยอดรวม</span><span class="total" id="grand">฿0</span></div>
+        <div style="height:12px"></div>
+        <button class="btn primary" id="checkout">ชำระเงิน</button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Drawer / Customize -->
+  <div class="drawer" id="drawer" role="dialog" aria-modal="true">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div><strong id="dTitle">เลือกเครื่องดื่ม</strong><div class="small" id="dPrice">฿0</div></div>
+      <button class="btn" id="close">ปิด</button>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:8px">
+      <div class="thumb" style="width:110px;height:90px;border-radius:8px;overflow:hidden"><img id="dImg" src="" alt=""/></div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+        <div class="chips" id="sizeChips"></div>
+        <div style="font-size:13px;color:var(--muted)">เลือกขนาด</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:8px">
+      <div class="small">ความหวาน: <span id="sweetVal">50%</span></div>
+      <input type="range" id="sweet" min="0" max="100" step="10" value="50" />
+    </div>
+    <div style="margin-bottom:8px">
+      <div class="small">น้ำแข็ง: <span id="iceVal">50%</span></div>
+      <input type="range" id="ice" min="0" max="100" step="10" value="50" />
+    </div>
+
+    <div style="margin-bottom:8px">
+      <div class="small">นม</div>
+      <div class="chips" id="milkChips"></div>
+    </div>
+
+    <div style="margin-bottom:8px">
+      <div class="small">ท็อปปิ้ง</div>
+      <div class="chips" id="topChips"></div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn" id="addCart">เพิ่มลงตะกร้า</button>
+      <button class="btn primary" id="addCartBuy">เพิ่มและไปชำระ</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // Data
+    const MENU = [
+      {id:'latte', name:'ลาเต้', base:45, img:'https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=800&q=80', cat:'coffee'},
+      {id:'americano', name:'อเมริกาโน่', base:35, img:'https://shorturl.asia/eHzhN', cat:'coffee'},
+      {id:'caramel', name:'คาราเมล มัคคิอาโต้', base:55, img:'https://shorturl.asia/6iV7a', cat:'coffee'},
+      {id:'matcha', name:'มัทฉะลาเต้', base:55, img:'https://shorturl.asia/IqgfQ', cat:'tea'},
+      {id:'thaitea', name:'ชาไทย', base:40, img:'https://shorturl.asia/4Lfi6', cat:'tea'},
+      {id:'cocoa', name:'โกโก้เข้ม', base:45, img:'https://shorturl.asia/Is9he', cat:'cocoa'},
+      {id:'freshmilk', name:'นมสดฮอกไกโด', base:40, img:'https://shorturl.asia/9dUg3', cat:'milk'},
+      {id:'strawsoda', name:'สตรอว์เบอร์รีโซดา', base:35, img:'https://shorturl.asia/RIqvu', cat:'soda'},
+    ];
+    const SIZES = [{id:'S', label:'S 12oz', add:0},{id:'M', label:'M 16oz', add:5},{id:'L', label:'L 22oz', add:10}];
+    const MILKS = [{id:'dairy',label:'นมโค',add:0},{id:'oat',label:'โอ๊ต',add:8},{id:'almond',label:'อัลมอนด์',add:8},{id:'none',label:'ไม่ใส่นม',add:0}];
+    const TOPPINGS = [{id:'boba',label:'ไข่มุก',add:10},{id:'jelly',label:'เจลลี่',add:8},{id:'pudding',label:'พุดดิ้ง',add:10},{id:'whip',label:'วิปครีม',add:7}];
+
+    // State
+    let current = null; // object for customization
+    let cart = [];
+
+    const menuGrid = document.getElementById('menuGrid');
+    const cartList = document.getElementById('cartList');
+    const grand = document.getElementById('grand');
+
+    function renderMenu(q=''){
+      menuGrid.innerHTML='';
+      MENU.filter(m=>m.name.includes(q) || m.cat.includes(q)).forEach(m=>{
+        const el = document.createElement('div'); el.className='card';
+        el.innerHTML = `
+          <div class="thumb"><img src="${m.img}" alt="${m.name}"></div>
+          <div style="padding:6px 4px"><div class="name">${m.name}</div><div class="meta">เริ่ม ${format(m.base)}</div></div>
+          <div style="padding:0 6px 6px;display:flex;gap:8px;align-items:center;justify-content:space-between"><button class="btn" data-info="${m.id}">รายละเอียด</button><button class="btn primary" data-add="${m.id}">เลือก</button></div>
+        `;
+        menuGrid.appendChild(el);
+      });
+      // attach events
+      document.querySelectorAll('[data-add]').forEach(b=>b.addEventListener('click',e=>openDrawer(findMenu(e.target.dataset.add))));
+    }
+
+    function format(n){return '฿'+n}
+    function findMenu(id){return MENU.find(x=>x.id===id)}
+
+    function openDrawer(menu){
+      current = {id:menu.id,name:menu.name,base:menu.base,img:menu.img,size:'M',sweet:50,ice:50,milk:'dairy',tops:[],shots:0};
+      document.getElementById('dTitle').textContent = menu.name;
+      document.getElementById('dImg').src = menu.img;
+      document.getElementById('dPrice').textContent = format(calcPrice(current));
+      // sizes
+      const sizeChips = document.getElementById('sizeChips'); sizeChips.innerHTML='';
+      SIZES.forEach(s=>{const b=document.createElement('button');b.className='chip'+(s.id===current.size?' active':'');b.textContent=s.label+(s.add?` +${format(s.add)}`:'');b.onclick=()=>{current.size=s.id;[...sizeChips.children].forEach(x=>x.classList.remove('active'));b.classList.add('active');updatePrice();};sizeChips.appendChild(b)});
+      // milk
+      const milkChips = document.getElementById('milkChips'); milkChips.innerHTML='';
+      MILKS.forEach(m=>{const b=document.createElement('button');b.className='chip'+(m.id===current.milk?' active':'');b.textContent=m.label+(m.add?` +${format(m.add)}`:'');b.onclick=()=>{current.milk=m.id;[...milkChips.children].forEach(x=>x.classList.remove('active'));b.classList.add('active');updatePrice();};milkChips.appendChild(b)});
+      // toppings
+      const topChips = document.getElementById('topChips'); topChips.innerHTML='';
+      TOPPINGS.forEach(t=>{const b=document.createElement('button');b.className='chip';b.textContent=t.label+` +${format(t.add)}`;b.onclick=()=>{if(current.tops.includes(t.id)){current.tops=current.tops.filter(x=>x!==t.id);b.classList.remove('active')}else{current.tops.push(t.id);b.classList.add('active')}updatePrice();};topChips.appendChild(b)});
+      // sliders
+      const sweet = document.getElementById('sweet'); const ice = document.getElementById('ice');
+      sweet.value = current.sweet; ice.value = current.ice; document.getElementById('sweetVal').textContent = current.sweet+'%'; document.getElementById('iceVal').textContent = current.ice+'%';
+      sweet.oninput = e=>{current.sweet = +e.target.value; document.getElementById('sweetVal').textContent = current.sweet+'%';};
+      ice.oninput = e=>{current.ice = +e.target.value; document.getElementById('iceVal').textContent = current.ice+'%';};
+
+      document.getElementById('dPrice').textContent = format(calcPrice(current));
+      document.getElementById('drawer').classList.add('open');
+    }
+
+    function calcPrice(o){
+      const sizeAdd = SIZES.find(s=>s.id===o.size).add;
+      const milkAdd = MILKS.find(m=>m.id===o.milk).add;
+      const topAdd = o.tops.reduce((a,id)=>a + TOPPINGS.find(t=>t.id===id).add,0);
+      const shotAdd = o.shots*10;
+      return o.base + sizeAdd + milkAdd + topAdd + shotAdd;
+    }
+
+    function updatePrice(){document.getElementById('dPrice').textContent = format(calcPrice(current))}
+
+    document.getElementById('addCart').addEventListener('click',()=>{if(!current)return; cart.push({...current, price:calcPrice(current)}); toast('เพิ่มลงตะกร้าแล้ว'); renderCart(); document.getElementById('drawer').classList.remove('open');});
+    document.getElementById('addCartBuy').addEventListener('click',()=>{if(!current)return; cart.push({...current, price:calcPrice(current)}); renderCart(); startPayment(); document.getElementById('drawer').classList.remove('open');});
+    document.getElementById('close').addEventListener('click',()=>document.getElementById('drawer').classList.remove('open'));
+    document.getElementById('clearBtn').addEventListener('click',()=>{cart=[];renderCart();});
+    document.getElementById('search').addEventListener('input',e=>renderMenu(e.target.value.trim()));
+
+    function renderCart(){
+      if(cart.length===0){cartList.innerHTML = '<div class="hint">ยังไม่มีสินค้า เลือกเมนูทางซ้าย</div>'; grand.textContent='฿0'; return}
+      cartList.innerHTML=''; let sum=0;
+      cart.forEach((it,idx)=>{sum+=it.price; const el=document.createElement('div'); el.className='cart-item'; el.innerHTML = `<div class="dot"><img src="${it.img}" alt="${it.name}"></div><div style="flex:1"><div style="font-weight:700">${it.name} • ${it.size}</div><div class="small">หวาน ${it.sweet}% • น้ำแข็ง ${it.ice}% ${it.tops.length? '• '+it.tops.map(tid=>TOPPINGS.find(t=>t.id===tid).label).join(', '):''}</div></div><div style="text-align:right"><div style="font-weight:800">฿${it.price}</div><div style="margin-top:6px"><button class="btn" data-del="${idx}">ลบ</button></div></div>`; cartList.appendChild(el);});
+      document.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',e=>{cart.splice(+e.target.dataset.del,1);renderCart()}));
+      grand.textContent = '฿'+sum;
+    }
+
+    // Payment simulation
+    document.getElementById('checkout').addEventListener('click',startPayment);
+    function startPayment(){ if(cart.length===0){toast('ตะกร้าว่าง'); return} const qr = document.createElement('div'); qr.className='qr'; qr.textContent='QR CODE';
+      // simple modal replacement: reuse drawer area
+      const drawer = document.getElementById('drawer'); drawer.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div><strong>ชำระเงิน</strong><div class="small">กรุณาสแกน QR เพื่อชำระ</div></div><button class="btn" id="closePay">ปิด</button></div>';
+      const cont = document.createElement('div'); cont.style.padding='8px'; cont.appendChild(qr);
+      const prog = document.createElement('div'); prog.className='hint'; prog.textContent='รอการชำระเงิน...'; cont.appendChild(prog);
+      const sim = document.createElement('div'); sim.style.display='flex'; sim.style.gap='8px'; sim.style.marginTop='8px'; sim.innerHTML = '<button class="btn" id="cancelPay">ยกเลิก</button><button class="btn primary" id="simulate">จำลองชำระเงิน</button>';
+      cont.appendChild(sim); drawer.appendChild(cont); drawer.classList.add('open'); document.getElementById('closePay').addEventListener('click',()=>{location.reload()});
+      document.getElementById('simulate').addEventListener('click',()=>{
+        prog.textContent='กำลังตรวจสอบการชำระเงิน...'; let p=0; const t=setInterval(()=>{p+=8; if(p>=100){clearInterval(t); prog.textContent='ชำระเงินสำเร็จ • กำลังชงเครื่องดื่ม'; setTimeout(()=>{toast('เครื่องดื่มพร้อมเสิร์ฟแล้ว'); cart=[]; renderCart(); location.reload();},1200)} else {prog.textContent='กำลังชำระเงิน... '+p+'%'} },120);
+      });
+      document.getElementById('cancelPay').addEventListener('click',()=>{document.getElementById('drawer').classList.remove('open'); renderDrawerDefault();});
+    }
+
+    function renderDrawerDefault(){
+      // restore drawer template (reload page easiest)
+    }
+
+    // toast
+    let tt; function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.style.display='block';clearTimeout(tt);tt=setTimeout(()=>el.style.display='none',1400)}
+
+    // init
+    renderMenu(); renderCart();
+  </script>
+</body>
+</html>
